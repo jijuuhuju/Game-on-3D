@@ -2,7 +2,7 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x202020);
 
 
-// カメラ（一人称視点）
+// カメラ（一人称）
 const camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
@@ -23,17 +23,27 @@ renderer.setSize(
     window.innerHeight
 );
 
-document.getElementById("game").appendChild(renderer.domElement);
+document
+    .getElementById("game")
+    .appendChild(renderer.domElement);
 
 
 // ライト
-const light = new THREE.DirectionalLight(0xffffff, 1);
+const light = new THREE.DirectionalLight(
+    0xffffff,
+    1
+);
+
 light.position.set(5, 10, 5);
+
 scene.add(light);
 
 
 // 床
-const floorGeometry = new THREE.PlaneGeometry(50, 50);
+const floorGeometry = new THREE.PlaneGeometry(
+    50,
+    50
+);
 
 const floorMaterial = new THREE.MeshStandardMaterial({
     color: 0x555555
@@ -45,26 +55,29 @@ const floor = new THREE.Mesh(
 );
 
 floor.rotation.x = -Math.PI / 2;
+
 scene.add(floor);
 
 
-// 壁を作る関数
-function createWall(x, z) {
+// 壁作成
+function createWall(x, z){
 
-    const wallGeometry = new THREE.BoxGeometry(
+    const geometry = new THREE.BoxGeometry(
         2,
         3,
         2
     );
 
-    const wallMaterial = new THREE.MeshStandardMaterial({
+    const material = new THREE.MeshStandardMaterial({
         color: 0x333333
     });
 
+
     const wall = new THREE.Mesh(
-        wallGeometry,
-        wallMaterial
+        geometry,
+        material
     );
+
 
     wall.position.set(
         x,
@@ -72,43 +85,207 @@ function createWall(x, z) {
         z
     );
 
+
     scene.add(wall);
+
 }
 
 
-// テスト用の壁
-createWall(0, 0);
-createWall(2, 0);
-createWall(-2, 0);
-createWall(0, -2);
+// テスト壁
+createWall(0,0);
+createWall(2,0);
+createWall(-2,0);
+createWall(0,-2);
 
 
+
+// =====================
+// PC移動
+// =====================
+
+const keys = {};
+
+window.addEventListener(
+    "keydown",
+    (e)=>{
+        keys[e.key.toLowerCase()] = true;
+    }
+);
+
+
+window.addEventListener(
+    "keyup",
+    (e)=>{
+        keys[e.key.toLowerCase()] = false;
+    }
+);
+
+
+function movePlayer(){
+
+    const speed = 0.08;
+
+
+    if(keys["w"]){
+        camera.position.z -= speed;
+    }
+
+    if(keys["s"]){
+        camera.position.z += speed;
+    }
+
+    if(keys["a"]){
+        camera.position.x -= speed;
+    }
+
+    if(keys["d"]){
+        camera.position.x += speed;
+    }
+
+}
+
+
+
+// =====================
+// スマホ操作
+// =====================
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+let moveX = 0;
+let moveY = 0;
+
+let lookX = 0;
+
+
+document.addEventListener(
+    "touchstart",
+    (e)=>{
+
+        const touch = e.touches[0];
+
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+
+    }
+);
+
+
+document.addEventListener(
+    "touchmove",
+    (e)=>{
+
+        const touch = e.touches[0];
+
+        const dx =
+        touch.clientX - touchStartX;
+
+        const dy =
+        touch.clientY - touchStartY;
+
+
+        // 左側：移動
+        if(
+            touchStartX <
+            window.innerWidth / 2
+        ){
+
+            moveX = dx;
+            moveY = dy;
+
+        }
+
+        // 右側：視点
+        else{
+
+            lookX = dx;
+
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "touchend",
+    ()=>{
+
+        moveX = 0;
+        moveY = 0;
+        lookX = 0;
+
+    }
+);
+
+
+
+function mobileMove(){
+
+    const speed = 0.002;
+
+
+    camera.position.x +=
+        moveX * speed;
+
+
+    camera.position.z +=
+        moveY * speed;
+
+
+    camera.rotation.y -=
+        lookX * 0.003;
+
+}
+
+
+
+// =====================
 // 描画
+// =====================
+
 function animate(){
 
-    requestAnimationFrame(animate);
+    requestAnimationFrame(
+        animate
+    );
+
+
+    movePlayer();
+
+    mobileMove();
+
 
     renderer.render(
         scene,
         camera
     );
+
 }
+
 
 animate();
 
 
-// 画面サイズ変更対応
-window.addEventListener("resize", () => {
 
-    camera.aspect =
+// 画面サイズ変更
+
+window.addEventListener(
+    "resize",
+    ()=>{
+
+        camera.aspect =
         window.innerWidth /
         window.innerHeight;
 
-    camera.updateProjectionMatrix();
 
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
+        camera.updateProjectionMatrix();
 
-});
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+    }
+);

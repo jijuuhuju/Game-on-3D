@@ -59,7 +59,7 @@ floor.rotation.x = -Math.PI / 2;
 scene.add(floor);
 
 
-// 壁作成
+// 壁
 function createWall(x, z){
 
     const geometry = new THREE.BoxGeometry(
@@ -91,7 +91,6 @@ function createWall(x, z){
 }
 
 
-// テスト壁
 createWall(0,0);
 createWall(2,0);
 createWall(-2,0);
@@ -100,7 +99,52 @@ createWall(0,-2);
 
 
 // =====================
-// PC移動
+// GLB読み込み
+// =====================
+
+const loader = new THREE.GLTFLoader();
+
+
+// 敵モデル
+loader.load(
+    "models/enemy.glb",
+
+    (gltf)=>{
+
+        const enemy = gltf.scene;
+
+        enemy.position.set(
+            0,
+            0,
+            -5
+        );
+
+        enemy.scale.set(
+            1,
+            1,
+            1
+        );
+
+        scene.add(enemy);
+
+    },
+
+    undefined,
+
+    (error)=>{
+
+        console.error(
+            "enemy.glb読み込み失敗",
+            error
+        );
+
+    }
+);
+
+
+
+// =====================
+// PC操作
 // =====================
 
 const keys = {};
@@ -108,7 +152,9 @@ const keys = {};
 window.addEventListener(
     "keydown",
     (e)=>{
+
         keys[e.key.toLowerCase()] = true;
+
     }
 );
 
@@ -116,7 +162,9 @@ window.addEventListener(
 window.addEventListener(
     "keyup",
     (e)=>{
+
         keys[e.key.toLowerCase()] = false;
+
     }
 );
 
@@ -185,7 +233,6 @@ document.addEventListener(
         touch.clientY - touchStartY;
 
 
-        // 左側：移動
         if(
             touchStartX <
             window.innerWidth / 2
@@ -195,8 +242,6 @@ document.addEventListener(
             moveY = dy;
 
         }
-
-        // 右側：視点
         else{
 
             lookX = dx;
@@ -217,7 +262,6 @@ document.addEventListener(
 
     }
 );
-
 
 
 function mobileMove(){
@@ -241,7 +285,7 @@ function mobileMove(){
 
 
 // =====================
-// 描画
+// ゲームループ
 // =====================
 
 function animate(){
@@ -268,7 +312,7 @@ animate();
 
 
 
-// 画面サイズ変更
+// 画面サイズ対応
 
 window.addEventListener(
     "resize",
